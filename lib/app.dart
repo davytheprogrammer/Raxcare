@@ -7,7 +7,6 @@ import 'screens/goals/goals.dart';
 
 import 'screens/settings.dart';
 
-
 class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
 
@@ -16,7 +15,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  int _currentIndex = 0;  // Starting index for BottomNavigationBar
+  int _currentIndex = 0; // Starting index for BottomNavigationBar
 
   // Constants for styling
   static const Color _activeColor = Color.fromRGBO(248, 221, 145, 1.0);
@@ -40,8 +39,8 @@ class _AppState extends State<App> {
         data: Theme.of(context).copyWith(
           canvasColor: _canvasColor,
           textTheme: Theme.of(context).textTheme.copyWith(
-            bodySmall: _unselectedTextStyle,
-          ),
+                bodySmall: _unselectedTextStyle,
+              ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,

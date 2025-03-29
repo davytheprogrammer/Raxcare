@@ -7,16 +7,12 @@ import 'package:fyp_app/services/auth.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'wrapper.dart';
-import 'package:fyp_app/screens/tracking.dart';
-import 'package:fyp_app/screens/community.dart';
 import 'package:fyp_app/screens/chat.dart';
 
 class Routes {
   static const String app = '/app';
   static const String wrapper = '/wrapper';
   static const String home = '/home';
-  static const String tracking = '/tracking';
-  static const String community = '/community';
   static const String chat = '/chat';
 }
 
@@ -72,9 +68,7 @@ class MyApp extends StatelessWidget {
           Routes.app: (context) => const App(),
           Routes.wrapper: (context) => const Wrapper(),
           Routes.home: (context) => HomePage(),
-          Routes.tracking: (context) => const Tracking(),
-          Routes.community: (context) => const Community(),
-          Routes.chat: (context) =>  Chat(),
+          Routes.chat: (context) => Chat(),
         },
         debugShowCheckedModeBanner: false,
       ),
