@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_app/models/appointment_model.dart';
+import 'package:RaxCare/models/appointment_model.dart';
 
 class AppointmentService {
   User? user = FirebaseAuth.instance.currentUser;

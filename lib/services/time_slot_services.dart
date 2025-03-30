@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_app/models/time_slot_model.dart';
+import 'package:RaxCare/models/time_slot_model.dart';
 
 class TimeSlotService {
   User? user = FirebaseAuth.instance.currentUser;

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fyp_app/models/therapist_location_model.dart';
+import 'package:RaxCare/models/therapist_location_model.dart';
 
 class TherapistLocationService {
   Future<List<TherapistLocationModel>> getAllTherapistLocations() async {

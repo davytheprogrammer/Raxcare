@@ -3,6 +3,165 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../form/relapseform.dart';
 import '../controllers/home_controller.dart';
 
+// Base interface for different CheckInCard states
+abstract class CheckInState {
+  Widget buildUI(BuildContext context, _CheckInCardState state);
+  void handleCheckIn(BuildContext context, _CheckInCardState state);
+  void handleRelapse(BuildContext context, _CheckInCardState state);
+  Color getPrimaryColor();
+  Color getSecondaryColor();
+}
+
+
+
+// Default state implementation
+class NormalCheckInState implements CheckInState {
+  @override
+  Widget buildUI(BuildContext context, _CheckInCardState state) {
+    final successDays = state.widget.controller.getDaysSober();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 6),
+        Text(
+          'Daily Check-in',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 14),
+        ElevatedButton(
+          onPressed: state.widget.controller.hasCheckedInToday
+              ? null
+              : () => state.handleCheckIn(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 12,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            disabledBackgroundColor: Colors.white.withOpacity(0.7),
+            elevation: 0,
+          ),
+          child: Text(
+            state.widget.controller.hasCheckedInToday
+                ? '✓ Checked In Today'
+                : 'Check In Now',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: getSecondaryColor(),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        state._buildProgressIndicator(),
+        const SizedBox(height: 18),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            state._buildStatColumn('Days', successDays.toString()),
+            state._buildStatColumn(
+              'Weeks',
+              (successDays / 7).floor().toString(),
+            ),
+            state._buildStatColumn(
+              'Months',
+              (successDays / 30).floor().toString(),
+            ),
+          ],
+        ),
+        if (!state.widget.controller.hasCheckedInToday && successDays > 0) ...[
+          const SizedBox(height: 12),
+          Text(
+            "Don't forget to check in today!",
+            style: GoogleFonts.poppins(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+        const SizedBox(height: 6),
+        TextButton(
+          onPressed: () => state.handleRelapse(),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white.withOpacity(0.7),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            'I Had a Relapse',
+            style: GoogleFonts.poppins(fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void handleCheckIn(BuildContext context, _CheckInCardState state) {
+    state._showHonestyReminder();
+  }
+
+  @override
+  void handleRelapse(BuildContext context, _CheckInCardState state) {
+    state.handleRelapse();
+  }
+
+  @override
+  Color getPrimaryColor() => Colors.blue[700]!;
+
+  @override
+  Color getSecondaryColor() => Colors.blue[900]!;
+}
+
+// Celebratory state when milestones are reached
+class CelebrateCheckInState implements CheckInState {
+  @override
+  Widget buildUI(BuildContext context, _CheckInCardState state) {
+    final ui = NormalCheckInState().buildUI(context, state);
+    // Return enhanced UI with celebration effects
+    return Stack(
+      children: [
+        ui,
+        Positioned(
+          top: 10,
+          right: 10,
+          child: Icon(
+            Icons.celebration,
+            color: Colors.amber[300],
+            size: 24,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void handleCheckIn(BuildContext context, _CheckInCardState state) {
+    NormalCheckInState().handleCheckIn(context, state);
+  }
+
+  @override
+  void handleRelapse(BuildContext context, _CheckInCardState state) {
+    NormalCheckInState().handleRelapse(context, state);
+  }
+
+  @override
+  Color getPrimaryColor() => Colors.indigo[600]!;
+
+  @override
+  Color getSecondaryColor() => Colors.indigo[900]!;
+}
+
 class CheckInCard extends StatefulWidget {
   final HomeController controller;
   final VoidCallback onCheckIn;
@@ -18,10 +177,22 @@ class CheckInCard extends StatefulWidget {
 }
 
 class _CheckInCardState extends State<CheckInCard> {
+  late CheckInState currentState;
+
   @override
   void initState() {
     super.initState();
+    // Determine initial state based on controller data
+    _updateState();
     widget.controller.addListener(_updateUI);
+  }
+
+  void _updateState() {
+    if (widget.controller.shouldCelebrate()) {
+      currentState = CelebrateCheckInState();
+    } else {
+      currentState = NormalCheckInState();
+    }
   }
 
   @override
@@ -30,7 +201,11 @@ class _CheckInCardState extends State<CheckInCard> {
     super.dispose();
   }
 
-  void _updateUI() => setState(() {});
+  void _updateUI() {
+    setState(() {
+      _updateState();
+    });
+  }
 
   Widget _buildStatColumn(String label, String value) {
     return Column(
@@ -38,7 +213,7 @@ class _CheckInCardState extends State<CheckInCard> {
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 28,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -46,7 +221,7 @@ class _CheckInCardState extends State<CheckInCard> {
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: 14,
             color: Colors.white.withOpacity(0.9),
           ),
         ),
@@ -63,17 +238,21 @@ class _CheckInCardState extends State<CheckInCard> {
 
     return Column(
       children: [
-        LinearProgressIndicator(
-          value: progress / nextMilestone,
-          backgroundColor: Colors.white.withOpacity(0.3),
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: progress / nextMilestone,
+            backgroundColor: Colors.white.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            minHeight: 6,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           'Next milestone: $nextMilestone days',
           style: GoogleFonts.poppins(
             color: Colors.white.withOpacity(0.9),
-            fontSize: 14,
+            fontSize: 12,
           ),
         ),
       ],
@@ -90,7 +269,7 @@ class _CheckInCardState extends State<CheckInCard> {
           'Moment of Reflection',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
-            color: Colors.blue[900],
+            color: currentState.getSecondaryColor(),
           ),
         ),
         content: Text(
@@ -110,10 +289,11 @@ class _CheckInCardState extends State<CheckInCard> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[900],
+              backgroundColor: currentState.getSecondaryColor(),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+              elevation: 0,
             ),
             child: Text(
               'Yes, Check In',
@@ -125,7 +305,7 @@ class _CheckInCardState extends State<CheckInCard> {
     );
   }
 
-  Future<void> _handleCheckIn() async {
+  Future<void> handleCheckIn() async {
     final shouldProceed = await _showHonestyReminder();
     if (shouldProceed ?? false) {
       await widget.controller.checkIn(context);
@@ -133,6 +313,9 @@ class _CheckInCardState extends State<CheckInCard> {
 
       if (widget.controller.shouldCelebrate()) {
         _showCelebrationDialog();
+        setState(() {
+          currentState = CelebrateCheckInState();
+        });
       }
     }
   }
@@ -146,7 +329,7 @@ class _CheckInCardState extends State<CheckInCard> {
           'Congratulations! 🎉',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
-            color: Colors.blue[900],
+            color: currentState.getSecondaryColor(),
           ),
         ),
         content: Column(
@@ -169,10 +352,11 @@ class _CheckInCardState extends State<CheckInCard> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[900],
+              backgroundColor: currentState.getSecondaryColor(),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+              elevation: 0,
             ),
             child: Text(
               'Thank you!',
@@ -184,7 +368,7 @@ class _CheckInCardState extends State<CheckInCard> {
     );
   }
 
-  Future<void> _handleRelapse() async {
+  Future<void> handleRelapse() async {
     final shouldProceed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -193,7 +377,7 @@ class _CheckInCardState extends State<CheckInCard> {
           'I Had a Relapse',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
-            color: Colors.blue[900],
+            color: currentState.getSecondaryColor(),
           ),
         ),
         content: Text(
@@ -211,10 +395,11 @@ class _CheckInCardState extends State<CheckInCard> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[900],
+              backgroundColor: currentState.getSecondaryColor(),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+              elevation: 0,
             ),
             child: Text(
               'Yes, Record It',
@@ -234,6 +419,9 @@ class _CheckInCardState extends State<CheckInCard> {
           builder: (context) => RelapseFormScreen(),
         ),
       );
+      setState(() {
+        currentState = NormalCheckInState();
+      });
     }
   }
 
@@ -246,142 +434,69 @@ class _CheckInCardState extends State<CheckInCard> {
           'You Are Stronger Than You Think',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
-            color: Colors.blue[900],
+            color: currentState.getSecondaryColor(),
           ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          Text(
-          'Every setback is a setup for a comeback. Your honesty and courage in acknowledging this moment shows your commitment to growth.',
-          style: GoogleFonts.poppins(),
+            Text(
+              'Every setback is a setup for a comeback. Your honesty and courage in acknowledging this moment shows your commitment to growth.',
+              style: GoogleFonts.poppins(),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Let us understand what led to this moment and use it to grow stronger.',
+              style: GoogleFonts.poppins(
+                fontStyle: FontStyle.italic,
+                color: currentState.getSecondaryColor(),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Let us understand what led to this moment and use it to grow stronger.',
-        style: GoogleFonts.poppins(
-          fontStyle: FontStyle.italic,
-          color: Colors.blue[900],
-        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: currentState.getSecondaryColor(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Continue',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ),
+        ],
       ),
-      ],
-    ),
-    actions: [
-    ElevatedButton(
-    onPressed: () => Navigator.pop(context),
-    style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.blue[900],
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(10),
-    ),
-    ),
-    child: Text(
-    'Continue',
-    style: GoogleFonts.poppins(color: Colors.white),
-    ),
-    ),
-    ],
-    ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final successDays = widget.controller.getDaysSober();
-
     return Card(
-      elevation: 8,
+      elevation: 4, // Reduced from 8
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Added margins for better spacing
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [Colors.blue[700]!, Colors.blue[900]!],
+            colors: [
+              currentState.getPrimaryColor(),
+              currentState.getSecondaryColor()
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Text(
-                'Daily Check-in',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: widget.controller.hasCheckedInToday
-                    ? null
-                    : _handleCheckIn,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  disabledBackgroundColor: Colors.white.withOpacity(0.7),
-                ),
-                child: Text(
-                  widget.controller.hasCheckedInToday
-                      ? '✓ Checked In Today'
-                      : 'Check In Now',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    color: Colors.blue[900],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildProgressIndicator(),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatColumn('Days', successDays.toString()),
-                  _buildStatColumn(
-                    'Weeks',
-                    (successDays / 7).floor().toString(),
-                  ),
-                  _buildStatColumn(
-                    'Months',
-                    (successDays / 30).floor().toString(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (!widget.controller.hasCheckedInToday && successDays > 0)
-                Text(
-                  "Don't forget to check in today!",
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: _handleRelapse,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.7),
-                ),
-                child: Text(
-                  'I Had a Relapse',
-                  style: GoogleFonts.poppins(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Reduced padding
+          child: currentState.buildUI(context, this),
         ),
       ),
     );

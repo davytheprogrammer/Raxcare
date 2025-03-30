@@ -1,9 +1,9 @@
 // wrapper.dart
+import 'package:RaxCare/authentication/authenticate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fyp_app/app.dart';
-import 'package:fyp_app/screens/authentication/authenticate.dart';
-import 'package:fyp_app/models/the_user.dart';
+import 'package:RaxCare/app.dart';
+import 'package:RaxCare/models/the_user.dart';
 
 class Wrapper extends StatelessWidget {
   const Wrapper({Key? key}) : super(key: key);

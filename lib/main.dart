@@ -1,18 +1,22 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fyp_app/models/the_user.dart';
-import 'package:fyp_app/screens/home/home.dart';
-import 'package:fyp_app/services/auth.dart';
+import 'package:RaxCare/models/the_user.dart';
+import 'package:RaxCare/screens/home/home.dart';
+import 'package:RaxCare/services/auth.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'wrapper.dart';
-import 'package:fyp_app/screens/chat.dart';
+import 'package:RaxCare/screens/tracking.dart';
+import 'package:RaxCare/screens/community.dart';
+import 'package:RaxCare/screens/chat.dart';
 
 class Routes {
   static const String app = '/app';
   static const String wrapper = '/wrapper';
   static const String home = '/home';
+  static const String tracking = '/tracking';
+  static const String community = '/community';
   static const String chat = '/chat';
 }
 
@@ -68,7 +72,9 @@ class MyApp extends StatelessWidget {
           Routes.app: (context) => const App(),
           Routes.wrapper: (context) => const Wrapper(),
           Routes.home: (context) => HomePage(),
-          Routes.chat: (context) => Chat(),
+          Routes.tracking: (context) => const Tracking(),
+          Routes.community: (context) => const Community(),
+          Routes.chat: (context) =>  Chat(),
         },
         debugShowCheckedModeBanner: false,
       ),

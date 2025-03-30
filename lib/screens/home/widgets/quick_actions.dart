@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../journal/journal.dart';
+import '../../sponsor/sponsor.dart';
+import '../../sponsor/support.dart';
+
 class QuickActions extends StatelessWidget {
   const QuickActions({Key? key}) : super(key: key);
 
@@ -16,16 +20,30 @@ class QuickActions extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: color.withOpacity(0.3)),
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withOpacity(0.2),
+                  color.withOpacity(0.1),
+                ],
+              ),
             ),
             child: Icon(
               icon,
               color: color,
-              size: 28,
+              size: 30,
             ),
           ),
           const SizedBox(height: 8),
@@ -34,6 +52,7 @@ class QuickActions extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 14,
+              fontWeight: FontWeight.w500,
               color: Colors.grey[800],
               height: 1.2,
             ),
@@ -45,34 +64,45 @@ class QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildQuickActionButton(
-          icon: Icons.phone_in_talk,
-          label: 'Call\nSponsor',
-          color: Colors.green[700]!,
-          onPressed: () {
-            // TODO: Implement call sponsor
-          },
-        ),
-        _buildQuickActionButton(
-          icon: Icons.edit_note,
-          label: 'Daily\nJournal',
-          color: Colors.purple[700]!,
-          onPressed: () {
-            // TODO: Implement journal
-          },
-        ),
-        _buildQuickActionButton(
-          icon: Icons.people_alt,
-          label: 'Support\nGroup',
-          color: Colors.orange[700]!,
-          onPressed: () {
-            // TODO: Implement community
-          },
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildQuickActionButton(
+            icon: Icons.phone_in_talk,
+            label: 'Call\nSponsor',
+            color: Colors.green[700]!,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const CallSponsorScreen()),
+              );
+            },
+          ),
+          _buildQuickActionButton(
+            icon: Icons.edit_note,
+            label: 'Daily\nJournal',
+            color: Colors.purple[700]!,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => JournalScreen()),
+              );
+            },
+          ),
+          _buildQuickActionButton(
+            icon: Icons.people_alt,
+            label: 'Support\nGroup',
+            color: Colors.orange[700]!,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const SupportGroupScreen()),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

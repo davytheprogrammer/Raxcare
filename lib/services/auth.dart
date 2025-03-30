@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_app/models/the_user.dart';
-import 'package:fyp_app/services/database.dart';
+import 'package:RaxCare/models/the_user.dart';
+import 'package:RaxCare/services/database.dart';
 
 class AuthService {
   // Create instance of our FirebaseAuth, providing us with methods from the FirebaseAuth class

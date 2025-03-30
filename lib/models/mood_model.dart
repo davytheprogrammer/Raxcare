@@ -1,4 +1,4 @@
-import 'package:fyp_app/models/mood_details_model.dart';
+import 'package:RaxCare/models/mood_details_model.dart';
 
 class MoodModel {
   String? email;

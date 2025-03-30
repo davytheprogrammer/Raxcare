@@ -1,5 +1,5 @@
-import 'package:fyp_app/models/mood_details_model.dart';
-import 'package:fyp_app/models/mood_model.dart';
+import 'package:RaxCare/models/mood_details_model.dart';
+import 'package:RaxCare/models/mood_model.dart';
 
 class MoodService {
   // Placeholder for getting mood list

@@ -1,7 +1,7 @@
 // authenticate.dart
+import 'package:RaxCare/authentication/login.dart';
+import 'package:RaxCare/authentication/register.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_app/screens/authentication/login.dart';
-import 'package:fyp_app/screens/authentication/register.dart';
 
 class Authenticate extends StatefulWidget {
   const Authenticate({Key? key}) : super(key: key);
@@ -10,7 +10,8 @@ class Authenticate extends StatefulWidget {
   _AuthenticateState createState() => _AuthenticateState();
 }
 
-class _AuthenticateState extends State<Authenticate> with SingleTickerProviderStateMixin {
+class _AuthenticateState extends State<Authenticate>
+    with SingleTickerProviderStateMixin {
   bool showSignIn = true;
   late AnimationController _controller;
   late Animation<double> _animation;

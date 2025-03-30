@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fyp_app/models/the_user.dart';
+import 'package:RaxCare/models/the_user.dart';
 
 class UserList extends StatefulWidget {
   const UserList({ Key? key }) : super(key: key);
