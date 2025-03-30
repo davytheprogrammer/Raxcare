@@ -9,7 +9,8 @@ import 'app.dart';
 import 'wrapper.dart';
 import 'package:RaxCare/screens/tracking.dart';
 import 'package:RaxCare/screens/community.dart';
-import 'package:RaxCare/screens/chat.dart';
+import 'package:RaxCare/screens/goals/goals.dart'; // Import your goals screen
+import 'package:google_generative_ai/google_generative_ai.dart'; // For GenerativeModel
 
 class Routes {
   static const String app = '/app';
@@ -18,6 +19,7 @@ class Routes {
   static const String tracking = '/tracking';
   static const String community = '/community';
   static const String chat = '/chat';
+  static const String goals = '/goals'; // Add goals route if needed
 }
 
 void main() async {
@@ -62,10 +64,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<TheUser?>.value(
-      value: AuthService().user,
-      initialData: null,
-      catchError: (_, __) => null,
+    // Initialize the AI model (replace with your actual API key)
+    final generativeModel = GenerativeModel(
+      model: 'gemini-1.5-flash',
+      apiKey:
+          'AIzaSyCOutG-g_tVZKzbTtH0bzNjWdoaDVA2YCo', // Replace with your actual API key
+    );
+
+    return MultiProvider(
+      providers: [
+        StreamProvider<TheUser?>.value(
+          value: AuthService().user,
+          initialData: null,
+          catchError: (_, __) => null,
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GoalProvider(aiModel: generativeModel),
+        ),
+      ],
       child: MaterialApp(
         initialRoute: Routes.wrapper,
         routes: {
@@ -74,7 +90,8 @@ class MyApp extends StatelessWidget {
           Routes.home: (context) => HomePage(),
           Routes.tracking: (context) => const Tracking(),
           Routes.community: (context) => const Community(),
-          Routes.chat: (context) =>  Chat(),
+          // Add goals route if needed:
+          // Routes.goals: (context) => GoalsScreen(),
         },
         debugShowCheckedModeBanner: false,
       ),

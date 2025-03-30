@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../chat.dart';
 import 'widgets/check_in_card.dart';
 import 'widgets/progress_card.dart';
 import 'widgets/quick_actions.dart';
@@ -45,13 +44,6 @@ class _HomePageState extends State<HomePage>
     if (mounted) {
       setState(() {});
     }
-  }
-
-  void _navigateToChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Chat()),
-    );
   }
 
   @override
@@ -124,20 +116,11 @@ class _HomePageState extends State<HomePage>
               child: const QuickActions(),
             ),
             const SizedBox(height: 20),
-            ProgressCard(
-              controller: _controller,
-              progressAnimation: _progressAnimation,
-            ),
+            const ProgressCard(),
             const SizedBox(height: 20),
             const MotivationCard(),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToChat(context),
-        backgroundColor: Colors.blue[900],
-        tooltip: 'Chat with AI',
-        child: const Icon(Icons.chat_bubble, color: Colors.white),
       ),
     );
   }

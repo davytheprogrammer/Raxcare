@@ -1,10 +1,7 @@
-import 'dart:ui';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/services.dart';
 
 class JournalScreen extends StatefulWidget {
   @override
@@ -49,82 +46,51 @@ class _JournalScreenState extends State<JournalScreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade900, Colors.purple.shade900],
-          ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
+      builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20,
-          left: 20,
-          right: 20,
         ),
-        child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _isEditing ? 'Edit Journal' : 'New Journal',
+                  _isEditing ? 'Edit Entry' : 'New Journal Entry',
                   style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _titleController,
-                  style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Title',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white54),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                    border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                  value!.isEmpty ? 'Title is required' : null,
+                      value!.isEmpty ? 'Title is required' : null,
                 ),
                 SizedBox(height: 15),
                 TextFormField(
                   controller: _contentController,
-                  style: TextStyle(color: Colors.white),
                   maxLines: 5,
                   decoration: InputDecoration(
                     labelText: 'Content',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white54),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                    border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                  value!.isEmpty ? 'Content is required' : null,
+                      value!.isEmpty ? 'Content is required' : null,
                 ),
                 SizedBox(height: 15),
                 ListTile(
                   title: Text(
                     'Date: ${DateFormat('MMM dd, yyyy').format(_selectedDate!)}',
-                    style: TextStyle(color: Colors.white),
                   ),
-                  trailing: Icon(Icons.calendar_today, color: Colors.white),
+                  trailing: Icon(Icons.calendar_today),
                   onTap: () async {
                     final pickedDate = await showDatePicker(
                       context: context,
@@ -168,17 +134,12 @@ class _JournalScreenState extends State<JournalScreen> {
                       }
                     }
                   },
-                  child: Text(_isEditing ? 'Update' : 'Save',
-                      style: TextStyle(fontSize: 18)),
+                  child: Text(_isEditing ? 'Update' : 'Save'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    minimumSize: Size(double.infinity, 50),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 10.0),
               ],
             ),
           ),
@@ -198,108 +159,148 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade900, Colors.purple.shade900],
-          ),
-        ),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: _journalService.getJournals(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+      appBar: AppBar(
+        title: Text('My Journal'),
+        elevation: 0,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _journalService.getJournals(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-            final journals = snapshot.data!.docs;
+          final journals = snapshot.data!.docs;
 
-            return ListView.builder(
-              padding: EdgeInsets.all(20),
-              itemCount: journals.length,
-              itemBuilder: (context, index) {
-                final journal = journals[index];
-                final data = journal.data() as Map<String, dynamic>;
-                return GlassContainer(
-                  child: ListTile(
-                    title: Text(data['title'],
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold)),
-                    subtitle: Column(
+          if (journals.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.book, size: 60, color: Colors.grey),
+                  SizedBox(height: 20),
+                  Text(
+                    'No journal entries yet',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Tap the + button to add your first entry',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: EdgeInsets.all(16),
+            itemCount: journals.length,
+            itemBuilder: (context, index) {
+              final journal = journals[index];
+              final data = journal.data() as Map<String, dynamic>;
+              final date = (data['date'] as Timestamp).toDate();
+
+              return Card(
+                margin: EdgeInsets.only(bottom: 16),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => JournalDetailScreen(
+                        title: data['title'],
+                        content: data['content'],
+                        date: date,
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                data['title'],
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            PopupMenuButton(
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  child: Text('Edit'),
+                                  value: 'edit',
+                                ),
+                                PopupMenuItem(
+                                  child: Text('Delete'),
+                                  value: 'delete',
+                                ),
+                              ],
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  _showJournalForm(journal: journal);
+                                } else if (value == 'delete') {
+                                  await _journalService
+                                      .deleteJournal(journal.id);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
                         Text(
                           data['content'],
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
-                        SizedBox(height: 5),
+                        SizedBox(height: 8),
                         Text(
-                          DateFormat('MMM dd, yyyy - HH:mm')
-                              .format((data['date'] as Timestamp).toDate()),
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                          DateFormat('MMM dd, yyyy').format(date),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blueAccent),
-                          onPressed: () => _showJournalForm(journal: journal),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.redAccent),
-                          onPressed: () async {
-                            await _journalService.deleteJournal(journal.id);
-                          },
-                        ),
-                      ],
-                    ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => JournalDetailScreen(
-                          title: data['title'],
-                          content: data['content'],
-                          date: (data['date'] as Timestamp).toDate(),
-                        ),
-                      ),
                     ),
                   ),
-                );
-              },
-            );
-          },
-        ),
+                ),
+              );
+            },
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showJournalForm(),
-        child: Icon(Icons.add, size: 30),
-        backgroundColor: Colors.blueAccent,
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }
 }
 
 class Journal {
-  final CollectionReference journals = FirebaseFirestore.instance
-      .collection('journals');
+  final CollectionReference journals =
+      FirebaseFirestore.instance.collection('journals');
 
-  Future<void> addJournal(
-      String title, String content, DateTime date) async {
+  Future<void> addJournal(String title, String content, DateTime date) async {
     try {
       await journals.add({
         'title': title,
@@ -358,79 +359,38 @@ class JournalDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Journal Details'),
-        backgroundColor: Colors.transparent,
+        title: Text('Journal Entry'),
         elevation: 0,
       ),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade900, Colors.purple.shade900],
-          ),
-        ),
-        child: GlassContainer(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    DateFormat('MMM dd, yyyy - HH:mm').format(date),
-                    style: TextStyle(color: Colors.white54, fontSize: 14),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    content,
-                    style: TextStyle(color: Colors.white70, fontSize: 18),
-                  ),
-                ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              DateFormat('MMMM dd, yyyy').format(date),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class GlassContainer extends StatelessWidget {
-  final Widget child;
-
-  GlassContainer({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withOpacity(0.1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: child,
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              content,
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.6,
+              ),
+            ),
+          ],
         ),
       ),
     );

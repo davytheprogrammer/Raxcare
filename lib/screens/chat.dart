@@ -4,12 +4,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
-class Chat extends StatefulWidget {
+class ChatScreen extends StatefulWidget {
   @override
-  _ChatState createState() => _ChatState();
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatState extends State<Chat> with TickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
@@ -17,7 +17,8 @@ class _ChatState extends State<Chat> with TickerProviderStateMixin {
   late AnimationController _fadeController;
 
   static const String API_URL = "https://api.together.xyz/v1/chat/completions";
-  static const String API_KEY = "4db152889da5afebdba262f90e4cdcf12976ee8b48d9135c2bb86ef9b0d12bdd";
+  static const String API_KEY =
+      "4db152889da5afebdba262f90e4cdcf12976ee8b48d9135c2bb86ef9b0d12bdd";
 
   @override
   void initState() {
@@ -46,18 +47,19 @@ class _ChatState extends State<Chat> with TickerProviderStateMixin {
 
   Future<String> _fetchAIResponse(String userMessage) async {
     try {
-      final response = await http.post(
-        Uri.parse(API_URL),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $API_KEY",
-        },
-        body: json.encode({
-          "model": "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
-          "messages": [
-            {
-              "role": "system",
-              "content": """
+      final response = await http
+          .post(
+            Uri.parse(API_URL),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $API_KEY",
+            },
+            body: json.encode({
+              "model": "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": """
                 You are an empathetic AI counselor specialized in addiction recovery. Your responses should be:
                 1. Supportive and non-judgmental
                 2. Focused on encouragement and growth
@@ -65,13 +67,14 @@ class _ChatState extends State<Chat> with TickerProviderStateMixin {
                 4. Aimed at building hope and resilience
                 Remember to maintain a warm, professional tone while keeping responses concise.
               """
-            },
-            {"role": "user", "content": userMessage}
-          ],
-          "temperature": 0.7,
-          "max_tokens": 150,  // Added to limit response length
-        }),
-      ).timeout(const Duration(seconds: 15));
+                },
+                {"role": "user", "content": userMessage}
+              ],
+              "temperature": 0.7,
+              "max_tokens": 150, // Added to limit response length
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final responseJson = json.decode(response.body);
@@ -258,7 +261,7 @@ class _ChatState extends State<Chat> with TickerProviderStateMixin {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment:
-        message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isUser) _buildAvatar(true),
           const SizedBox(width: 8),

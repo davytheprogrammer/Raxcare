@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'gender_screen.dart';
+import '../utils/preferences_service.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
-  const Register({Key? key, required this.toggleView}) : super(key: key);
+  final VoidCallback onRegistrationComplete; // Added callback
+
+  const Register({
+    Key? key,
+    required this.toggleView,
+    required this.onRegistrationComplete,
+  }) : super(key: key);
 
   @override
   _RegisterState createState() => _RegisterState();
@@ -30,21 +38,47 @@ class _RegisterState extends State<Register> {
       setState(() => _loading = true);
       try {
         // Create user with email and password
-        final UserCredential result = await _auth.createUserWithEmailAndPassword(
+        final UserCredential result =
+            await _auth.createUserWithEmailAndPassword(
           email: _email.trim(),
           password: _password,
         );
 
-        // Store only nickname in Firestore
+        // Store user data in Firestore
         if (result.user != null) {
           await _firestore.collection('users').doc(result.user!.uid).set({
             'nickname': _nickname,
+            'email': _email.trim(),
             'createdAt': FieldValue.serverTimestamp(),
+            'onboardingComplete': false,
           });
+
+          // Save basic info to preferences
+          await PreferencesService.saveData('nickname', _nickname);
+          await PreferencesService.saveData('email', _email.trim());
+          await PreferencesService.saveData('isNewUser', true as String);
+
+          // Trigger registration complete callback
+          widget.onRegistrationComplete();
+
+          // Navigate to personalization screen
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const GenderScreen(),
+              ),
+            );
+          }
         }
       } on FirebaseAuthException catch (e) {
         setState(() {
           _error = e.message ?? 'An error occurred during registration';
+          _loading = false;
+        });
+      } catch (e) {
+        setState(() {
+          _error = 'An unexpected error occurred';
           _loading = false;
         });
       }
@@ -67,15 +101,16 @@ class _RegisterState extends State<Register> {
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Please fill in the details to get started',
+                    'Join our recovery community',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                          color: Colors.grey[600],
+                        ),
                   ),
                   const SizedBox(height: 32),
 
@@ -83,12 +118,16 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Nickname',
+                      hintText: 'How we\'ll address you',
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
                     ),
-                    validator: (val) => val?.isEmpty ?? true ? 'Please enter a nickname' : null,
+                    validator: (val) =>
+                        val?.isEmpty ?? true ? 'Please enter a nickname' : null,
                     onChanged: (val) => setState(() => _nickname = val),
                   ),
                   const SizedBox(height: 16),
@@ -97,18 +136,23 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Email',
+                      hintText: 'your@email.com',
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
                     ),
                     validator: (val) {
                       if (val?.isEmpty ?? true) return 'Please enter an email';
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val!)) {
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                          .hasMatch(val!)) {
                         return 'Please enter a valid email';
                       }
                       return null;
                     },
+                    keyboardType: TextInputType.emailAddress,
                     onChanged: (val) => setState(() => _email = val),
                   ),
                   const SizedBox(height: 16),
@@ -117,19 +161,27 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Password',
+                      hintText: 'At least 6 characters',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
                     ),
                     obscureText: _obscurePassword,
                     validator: (val) {
-                      if (val?.isEmpty ?? true) return 'Please enter a password';
-                      if (val!.length < 6) return 'Password must be at least 6 characters';
+                      if (val?.isEmpty ?? true)
+                        return 'Please enter a password';
+                      if (val!.length < 6)
+                        return 'At least 6 characters required';
                       return null;
                     },
                     onChanged: (val) => setState(() => _password = val),
@@ -142,16 +194,22 @@ class _RegisterState extends State<Register> {
                       labelText: 'Confirm Password',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        icon: Icon(_obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () => setState(() =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
                     ),
                     obscureText: _obscureConfirmPassword,
                     validator: (val) {
-                      if (val?.isEmpty ?? true) return 'Please confirm your password';
+                      if (val?.isEmpty ?? true)
+                        return 'Please confirm your password';
                       if (val != _password) return 'Passwords do not match';
                       return null;
                     },
@@ -165,7 +223,10 @@ class _RegisterState extends State<Register> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
                         _error,
-                        style: const TextStyle(color: Colors.red, fontSize: 14),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 14,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -178,14 +239,21 @@ class _RegisterState extends State<Register> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     child: _loading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                        : const Text('Register'),
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Create Account',
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 16),
 
@@ -199,7 +267,12 @@ class _RegisterState extends State<Register> {
                       ),
                       TextButton(
                         onPressed: () => widget.toggleView(),
-                        child: const Text('Login'),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ],
                   ),

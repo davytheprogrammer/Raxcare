@@ -1,277 +1,108 @@
+import 'package:RaxCare/screens/analysis.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-import '../controllers/home_controller.dart';
 
-class ProgressCard extends StatefulWidget {
-  final HomeController controller;
-  final Animation<double> progressAnimation;
+class ProgressCard extends StatelessWidget {
+  final double height;
 
   const ProgressCard({
-    Key? key,
-    required this.controller,
-    required this.progressAnimation,
-  }) : super(key: key);
-
-  @override
-  State<ProgressCard> createState() => _ProgressCardState();
-}
-
-class _ProgressCardState extends State<ProgressCard> with SingleTickerProviderStateMixin {
-  late AnimationController _loadingController;
-  late Animation<double> _loadingAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadingController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    );
-    _loadingAnimation = Tween<double>(begin: 0, end: 1).animate(_loadingController);
-  }
-
-  @override
-  void dispose() {
-    _loadingController.dispose();
-    super.dispose();
-  }
-
-  void _showLoadingAndAnalytics(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        _loadingController.forward(from: 0);
-        return AnimatedBuilder(
-          animation: _loadingAnimation,
-          builder: (context, child) {
-            if (_loadingAnimation.value < 1) {
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 20),
-                    CircularProgressIndicator(
-                      value: _loadingAnimation.value,
-                      color: Colors.blue[700],
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Loading Analytics...',
-                      style: GoogleFonts.poppins(fontSize: 16),
-                    ),
-                    Text(
-                      '${(_loadingAnimation.value * 100).toInt()}%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Text(
-                  'Your Analytics',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
-                  ),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Placeholder analytics content
-                    Container(
-                      height: 200,
-                      width: double.maxFinite,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Analytics Placeholder',
-                          style: GoogleFonts.poppins(color: Colors.grey[600]),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Close',
-                      style: GoogleFonts.poppins(color: Colors.blue[700]),
-                    ),
-                  ),
-                ],
-              );
-            }
-          },
-        );
-      },
-    );
-  }
-
-  void _showDetailedProgress(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'AI Analytics Details',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[900],
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Your AI Journey Progress',
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Keep using the app everyday for at least 3 days by:\n'
-                    '• Checking in daily\n'
-                    '• Filling your journal\n'
-                    '• Chatting with the AI for insights',
-                style: GoogleFonts.poppins(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Next update in: 24 hours',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _showLoadingAndAnalytics(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'View Analytics',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Close',
-                style: GoogleFonts.poppins(color: Colors.blue[700]),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    super.key,
+    this.height = 290, // Increased height to accommodate more content
+  });
 
   @override
   Widget build(BuildContext context) {
-    final daysActive = widget.controller.getDaysSober();
-
     return GestureDetector(
-      onTap: () => _showDetailedProgress(context),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const RecoveryProgressScreen()),
+        );
+      },
+      child: Container(
+        height: height,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Card(
+          elevation: 8, // Increased elevation for more depth
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).primaryColor,
+                  Theme.of(context).primaryColorDark,
+                ],
+                stops: const [0.1, 0.9],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 6),
+                )
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
                 children: [
-                  Text(
-                    'AI Progress',
-                    style: GoogleFonts.poppins(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Advanced AI Analytics & Progress Tracker',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18, // Adjusted for the longer title
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Our intelligent system analyzes your recovery patterns using '
+                          'machine learning to provide personalized insights and predictive '
+                          'trends. Visualize your progress with interactive charts and '
+                          'receive AI-powered recommendations to optimize your recovery journey.',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                          softWrap: true,
+                        ),
+                      ],
                     ),
                   ),
-                  Icon(
-                    Icons.psychology,
-                    color: Colors.blue[700],
-                    size: 28,
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.4),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.insights_rounded, // More appropriate analytics icon
+                      color: Colors.white,
+                      size: 32,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: CircularPercentIndicator(
-                  radius: 80,
-                  lineWidth: 12,
-                  percent: (daysActive / 3).clamp(0.0, 1.0),
-                  center: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        daysActive.toString(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[900],
-                        ),
-                      ),
-                      Text(
-                        'DAYS',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                  progressColor: Colors.blue[700],
-                  backgroundColor: Colors.blue[100]!,
-                  animation: false,  // Set animation to false to avoid resetting on rebuild
-                  circularStrokeCap: CircularStrokeCap.round,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'AI Insights Goal: 3 days',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

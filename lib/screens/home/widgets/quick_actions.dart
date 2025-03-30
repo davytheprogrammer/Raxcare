@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import '../../chat.dart';
 import '../../journal/journal.dart';
 import '../../sponsor/sponsor.dart';
 import '../../sponsor/support.dart';
@@ -98,6 +98,16 @@ class QuickActions extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                     builder: (context) => const SupportGroupScreen()),
+              );
+            },
+          ),
+          _buildQuickActionButton(
+            icon: Icons.chat_bubble_outline,
+            label: 'Chat\nSupport',
+            color: Colors.blue[700]!,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => ChatScreen()),
               );
             },
           ),

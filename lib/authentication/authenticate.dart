@@ -1,7 +1,12 @@
-// authenticate.dart
 import 'package:RaxCare/authentication/login.dart';
 import 'package:RaxCare/authentication/register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+
+import 'onboarding_screen.dart';
+import 'personalization_screen.dart';
+import '../screens/home/home.dart';
 
 class Authenticate extends StatefulWidget {
   const Authenticate({Key? key}) : super(key: key);
@@ -10,56 +15,104 @@ class Authenticate extends StatefulWidget {
   _AuthenticateState createState() => _AuthenticateState();
 }
 
-class _AuthenticateState extends State<Authenticate>
-    with SingleTickerProviderStateMixin {
+class _AuthenticateState extends State<Authenticate> {
   bool showSignIn = true;
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  bool onboardingComplete = false;
+  bool isLoading = true;
+  bool isNewUser = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-    _controller.forward();
+    _checkOnboarding();
+    _checkIfNewUser();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final completed = prefs.getBool('onboardingComplete') ?? false;
+    setState(() {
+      onboardingComplete = completed;
+      isLoading = false;
+    });
+  }
+
+  Future<void> _checkIfNewUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isNew = prefs.getBool('isNewUser') ?? true;
+    setState(() {
+      isNewUser = isNew;
+    });
+  }
+
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboardingComplete', true);
+    setState(() {
+      onboardingComplete = true;
+    });
   }
 
   void toggleView() {
     setState(() {
       showSignIn = !showSignIn;
-      if (showSignIn) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
+    });
+  }
+
+  Future<void> _handleNewUserRegistration() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isNewUser', false);
+    setState(() {
+      isNewUser = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: showSignIn
-          ? Login(toggleView: toggleView, key: const ValueKey('login'))
-          : Register(toggleView: toggleView, key: const ValueKey('register')),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    );
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (!onboardingComplete) {
+      return OnboardingScreen(onComplete: _completeOnboarding);
+    }
+
+    if (user == null) {
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        child: showSignIn
+            ? Login(toggleView: toggleView, key: const ValueKey('login'))
+            : Register(
+                toggleView: toggleView,
+                key: const ValueKey('register'),
+                onRegistrationComplete: () {
+                  _handleNewUserRegistration();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PersonalizationScreen(
+                        onComplete: _handleNewUserRegistration,
+                      ),
+                    ),
+                  );
+                },
+              ),
+      );
+    }
+
+    // For new users after registration
+    if (isNewUser) {
+      return PersonalizationScreen(
+        onComplete: _handleNewUserRegistration,
+      );
+    }
+
+    // For returning users
+    return const HomePage();
   }
 }

@@ -43,9 +43,16 @@ dependencies:
   flutter_animate: ^4.5.2      # Animation utilities
   glassmorphism: ^3.0.0        # Frosted glass UI effect
   shimmer: ^3.0.0              # Loading effect
+  flutter_markdown: ^0.7.6+2
 
   # Authentication
   google_sign_in: ^6.2.0       # Google authentication
+  google_generative_ai: ^0.4.6
+  permission_handler: ^11.4.0
+  flutter_svg: ^2.0.17
+
+  syncfusion_flutter_charts: ^28.2.12
+
 
   # Firebase Services
   firebase_core: ^2.24.2       # Firebase core functionality
@@ -72,6 +79,7 @@ flutter:
   assets:
     - assets/animations/welcome.json  # Welcome screen animation
     - assets/logo.png                # Application logo
+    - assets/default_profile.png      # Default profile image
     - assets/animations/progress.json # Progress tracking animation
     - assets/animations/ai_analytics.json # AI analytics animation
     - assets/animations/recovery.json # Recovery process animation
