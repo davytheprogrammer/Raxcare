@@ -1,12 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jason.fyp_app">
 
-    <!-- Required permission to make phone calls -->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <!-- Needed for Android 11+ to query phone-related intents -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+    </queries>
 
     <application
         android:label="RaxCare"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".MainActivity"
@@ -37,5 +43,4 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-
 </manifest>

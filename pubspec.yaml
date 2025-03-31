@@ -22,6 +22,8 @@ dependencies:
   cupertino_icons: ^1.0.6      # iOS-style icons
   google_fonts: ^5.1.0         # Custom font implementation
   font_awesome_flutter: ^10.8.0 # Extended icon set
+  flutter_local_notifications: ^18.0.0 
+  timezone: ^0.10.0
   
   # Web and External Services
   webview_flutter: ^4.7.0      # Embedded web content

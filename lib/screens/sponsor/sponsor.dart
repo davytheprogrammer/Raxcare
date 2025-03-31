@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; // Add this import for jsonDecode
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CallSponsorScreen extends StatefulWidget {
   const CallSponsorScreen({Key? key}) : super(key: key);
@@ -25,7 +24,6 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
   void initState() {
     super.initState();
     _loadSponsors();
-    _checkPermissions();
   }
 
   @override
@@ -34,13 +32,6 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
     _phoneController.dispose();
     _notesController.dispose();
     super.dispose();
-  }
-
-  Future<void> _checkPermissions() async {
-    var status = await Permission.phone.status;
-    if (!status.isGranted) {
-      await Permission.phone.request();
-    }
   }
 
   Future<void> _loadSponsors() async {
@@ -88,8 +79,7 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sponsor added successfully'),
-          backgroundColor: Theme.of(context).primaryColor,
+          content: const Text('Sponsor added successfully'),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -108,12 +98,16 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
 
   Future<void> _callSponsor(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+      } else {
+        throw 'Could not launch dialer';
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not launch call'),
+          content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -133,7 +127,7 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: EdgeInsets.all(20) +
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -147,16 +141,16 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: Colors.blue[800],
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Sponsor Name',
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -168,12 +162,12 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone),
+                  prefixIcon: const Icon(Icons.phone),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -186,32 +180,34 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: 'Notes (Optional)',
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon: const Icon(Icons.note),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 maxLines: 3,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _addSponsor,
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  backgroundColor: Colors.blue[800],
                 ),
                 child: Text(
                   'SAVE SPONSOR',
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -233,9 +229,10 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
           ),
         ),
         elevation: 0,
+        backgroundColor: Colors.blue[800],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : sponsors.isEmpty
               ? Center(
                   child: Column(
@@ -245,31 +242,32 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
                         'assets/images/empty_sponsors.svg',
                         height: 150,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Text(
                         'No sponsors added yet',
                         style: GoogleFonts.montserrat(
                           fontSize: 18,
-                          color: Colors.grey[600],
+                          color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ElevatedButton.icon(
                         onPressed: _showAddSponsorDialog,
-                        icon: Icon(Icons.add),
-                        label: Text('Add Your First Sponsor'),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Your First Sponsor'),
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 12,
                           ),
+                          backgroundColor: Colors.blue[800],
                         ),
                       ),
                     ],
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: sponsors.length,
                   itemBuilder: (context, index) {
                     final sponsor = sponsors[index];
@@ -285,10 +283,12 @@ class _CallSponsorScreenState extends State<CallSponsorScreen> {
       floatingActionButton: sponsors.isNotEmpty
           ? FloatingActionButton(
               onPressed: _showAddSponsorDialog,
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
+              backgroundColor: Colors.blue[800],
               tooltip: 'Add Sponsor',
             )
           : null,
+      backgroundColor: Colors.white,
     );
   }
 }
@@ -312,22 +312,22 @@ class SponsorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).primaryColor.withOpacity(0.1),
-            Theme.of(context).primaryColor.withOpacity(0.05),
+            Colors.blue[400]!.withOpacity(0.1),
+            Colors.blue[100]!.withOpacity(0.05),
           ],
         ),
       ),
@@ -338,7 +338,7 @@ class SponsorCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: () {},
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -346,17 +346,17 @@ class SponsorCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 25,
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: Colors.blue[800],
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : '?',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +368,7 @@ class SponsorCard extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             phoneNumber,
                             style: TextStyle(
@@ -387,21 +387,21 @@ class SponsorCard extends StatelessWidget {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text('Delete Sponsor'),
-                            content: Text(
+                            title: const Text('Delete Sponsor'),
+                            content: const Text(
                               'Are you sure you want to delete this sponsor?',
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text('CANCEL'),
+                                child: const Text('CANCEL'),
                               ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
                                   onDelete();
                                 },
-                                child: Text(
+                                child: const Text(
                                   'DELETE',
                                   style: TextStyle(color: Colors.red),
                                 ),
@@ -414,9 +414,9 @@ class SponsorCard extends StatelessWidget {
                   ],
                 ),
                 if (notes.isNotEmpty) ...[
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -432,15 +432,15 @@ class SponsorCard extends StatelessWidget {
                     ),
                   ),
                 ],
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: onCall,
-                  icon: Icon(Icons.phone),
-                  label: Text('CALL NOW'),
+                  icon: const Icon(Icons.phone),
+                  label: const Text('CALL NOW'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 45),
+                    minimumSize: const Size(double.infinity, 45),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

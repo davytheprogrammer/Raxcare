@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../authentication/gender_screen.dart';
+import '../../utils/preferences_service.dart';
 import 'widgets/check_in_card.dart';
 import 'widgets/progress_card.dart';
 import 'widgets/quick_actions.dart';
@@ -36,13 +38,25 @@ class _HomePageState extends State<HomePage>
       parent: _animationController,
       curve: Curves.easeInOut,
     );
-    _initializeData();
+    _checkGenderAndInitializeData();
   }
 
-  Future<void> _initializeData() async {
-    await _controller.initialize();
-    if (mounted) {
-      setState(() {});
+  Future<void> _checkGenderAndInitializeData() async {
+    String? gender = await PreferencesService.getData('gender');
+    if (gender == null || gender.isEmpty) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const GenderScreen(),
+          ),
+        );
+      }
+    } else {
+      await _controller.initialize();
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 

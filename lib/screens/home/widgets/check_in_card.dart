@@ -21,75 +21,152 @@ class ActiveCheckInState implements CheckInState {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Check-In',
+        Text('Daily Check-In',
             style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
                 color: Colors.white)),
-        SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: state.widget.controller.hasCheckedInToday
-              ? null
-              : () => state.handleCheckIn(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: getGradientEnd(),
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            shape: StadiumBorder(),
-            elevation: 0,
+        const SizedBox(height: 16),
+
+        // Larger check-in button with countdown
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            state.widget.controller.hasCheckedInToday ? '✓ Done' : 'Check In',
-            style:
-                GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: state.widget.controller.hasCheckedInToday
+                    ? null
+                    : () => state.handleCheckIn(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: getGradientEnd(),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: const StadiumBorder(),
+                  elevation: 0,
+                ),
+                child: Text(
+                  state.widget.controller.hasCheckedInToday
+                      ? '✓ CHECKED IN'
+                      : 'CHECK IN NOW',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Countdown timer
+              if (state.widget.controller.hasCheckedInToday)
+                StreamBuilder<DateTime>(
+                  stream: Stream.periodic(
+                      const Duration(seconds: 1), (_) => DateTime.now()),
+                  builder: (context, snapshot) {
+                    final now = DateTime.now();
+                    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+                    final remaining = tomorrow.difference(now);
+
+                    return Column(
+                      children: [
+                        Text(
+                          'Next check-in available in:',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${remaining.inHours.toString().padLeft(2, '0')}h '
+                          '${(remaining.inMinutes % 60).toString().padLeft(2, '0')}m '
+                          '${(remaining.inSeconds % 60).toString().padLeft(2, '0')}s',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+            ],
           ),
         ),
-        SizedBox(height: 12),
+
+        const SizedBox(height: 20),
         _buildMilestoneRow(daysSober),
+
         if (!state.widget.controller.hasCheckedInToday && daysSober > 0)
           Padding(
-            padding: EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 12),
             child: Text(
-              'Tap to check in today!',
+              'Check in daily to track your progress!',
               style: GoogleFonts.poppins(
-                  fontSize: 11,
+                  fontSize: 14,
                   color: Colors.white70,
                   fontStyle: FontStyle.italic),
             ),
           ),
-        SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => state.handleRelapse(),
+        const SizedBox(height: 12),
+
+        // Relapse button
+        OutlinedButton(
+          onPressed: () => state.handleRelapse(),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white70,
+            side: const BorderSide(color: Colors.white70),
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          ),
           child: Text(
-            'Relapsed?',
+            'Report Relapse',
             style: GoogleFonts.poppins(
-                fontSize: 11,
-                color: Colors.white70,
-                decoration: TextDecoration.underline),
+              fontSize: 14,
+              decoration: TextDecoration.underline,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMilestoneRow(int days) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _statItem('Days', days.toString()),
-          _statItem('Weeks', (days / 7).floor().toString()),
-          _statItem('Months', (days / 30).floor().toString()),
-        ],
+  Widget _buildMilestoneRow(int days) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _statItem('DAYS', days.toString()),
+            _statItem('WEEKS', (days / 7).floor().toString()),
+            _statItem('MONTHS', (days / 30).floor().toString()),
+          ],
+        ),
       );
 
   Widget _statItem(String label, String value) => Column(
         children: [
           Text(value,
               style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white)),
+          const SizedBox(height: 4),
           Text(label,
-              style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70)),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.white70,
+                letterSpacing: 1.2,
+              )),
         ],
       );
 
@@ -102,10 +179,10 @@ class ActiveCheckInState implements CheckInState {
       state.handleRelapse();
 
   @override
-  Color getGradientStart() => Color(0xFF6B48FF);
+  Color getGradientStart() => const Color(0xFF6B48FF);
 
   @override
-  Color getGradientEnd() => Color(0xFF00DDEB);
+  Color getGradientEnd() => const Color(0xFF00DDEB);
 }
 
 // Celebration state
@@ -116,10 +193,10 @@ class MilestoneCheckInState implements CheckInState {
       alignment: Alignment.center,
       children: [
         ActiveCheckInState().buildContent(context, state),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: Icon(Icons.star, color: Colors.yellowAccent, size: 20),
+        const Positioned(
+          top: 8,
+          right: 8,
+          child: Icon(Icons.star, color: Colors.yellowAccent, size: 24),
         ),
       ],
     );
@@ -134,32 +211,34 @@ class MilestoneCheckInState implements CheckInState {
       ActiveCheckInState().onRelapse(context, state);
 
   @override
-  Color getGradientStart() => Color(0xFFFF7E5F);
+  Color getGradientStart() => const Color(0xFFFF7E5F);
 
   @override
-  Color getGradientEnd() => Color(0xFFfeb47b);
+  Color getGradientEnd() => const Color(0xFFfeb47b);
 }
 
 class CheckInCard extends StatefulWidget {
   final HomeController controller;
   final VoidCallback onCheckIn;
 
-  const CheckInCard(
-      {Key? key, required this.controller, required this.onCheckIn})
-      : super(key: key);
+  const CheckInCard({
+    Key? key,
+    required this.controller,
+    required this.onCheckIn,
+  }) : super(key: key);
 
   @override
   State<CheckInCard> createState() => _CheckInCardState();
 }
 
 class _CheckInCardState extends State<CheckInCard> {
-  CheckInState state = ActiveCheckInState(); // Initialize directly
+  CheckInState state = ActiveCheckInState();
 
   @override
   void initState() {
     super.initState();
     _updateState();
-    widget.controller.addListener(_updateUI); // Restore original listener name
+    widget.controller.addListener(_updateUI);
   }
 
   void _updateState() {
@@ -169,12 +248,12 @@ class _CheckInCardState extends State<CheckInCard> {
   }
 
   void _updateUI() {
-    setState(_updateState); // Restore _updateUI method
+    setState(_updateState);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_updateUI); // Match listener name
+    widget.controller.removeListener(_updateUI);
     super.dispose();
   }
 
@@ -185,8 +264,8 @@ class _CheckInCardState extends State<CheckInCard> {
       widget.onCheckIn();
       if (widget.controller.shouldCelebrate()) {
         setState(() => state = MilestoneCheckInState());
-        _showPrompt('Milestone Achieved! 🎉',
-            'You’ve hit ${widget.controller.getDaysSober()} days!', 'Awesome');
+        await _showPrompt('Milestone Achieved! 🎉',
+            'You\'ve hit ${widget.controller.getDaysSober()} days!', 'Awesome');
       }
     }
   }
@@ -195,7 +274,7 @@ class _CheckInCardState extends State<CheckInCard> {
     if (await _showPrompt(
         'Relapse?', 'Want to log this to grow stronger?', 'Yes')) {
       await _showPrompt(
-          'You’ve Got This!', 'Every step teaches us something.', 'Continue');
+          'You\'ve Got This!', 'Every step teaches us something.', 'Continue');
       await widget.controller.handleRelapse(context);
       Navigator.push(
           context, MaterialPageRoute(builder: (_) => RelapseFormScreen()));
@@ -243,16 +322,21 @@ class _CheckInCardState extends State<CheckInCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [state.getGradientStart(), state.getGradientEnd()],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2))
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: state.buildContent(context, this),
