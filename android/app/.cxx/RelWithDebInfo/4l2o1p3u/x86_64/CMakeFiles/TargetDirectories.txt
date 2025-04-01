@@ -1,0 +1,2 @@
+/home/ogega/Projects/Raxcare/android/app/.cxx/RelWithDebInfo/4l2o1p3u/x86_64/CMakeFiles/edit_cache.dir
+/home/ogega/Projects/Raxcare/android/app/.cxx/RelWithDebInfo/4l2o1p3u/x86_64/CMakeFiles/rebuild_cache.dir
