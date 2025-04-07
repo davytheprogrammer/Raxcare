@@ -70,70 +70,55 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Text(
-          'Your Journey',
-          style: GoogleFonts.poppins(
-            color: Colors.blue[900],
-            fontWeight: FontWeight.bold,
+      // Remove the app bar completely
+      appBar: null,
+      // Change background color to match the rest of the app
+      backgroundColor: Colors.white,
+      // Use SafeArea to ensure content doesn't overlap with status bar
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          // Remove padding to allow CheckInCard to go edge-to-edge
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Check-in card will now be full-width and act as the dashboard
+              CheckInCard(
+                controller: _controller,
+                onCheckIn: () {
+                  _animationController.forward(from: 0);
+                  if (_controller.shouldCelebrate()) {
+                    _confettiController.play();
+                    showDialog(
+                      context: context,
+                      builder: (context) => CelebrationDialog(
+                        confettiController: _confettiController,
+                        daysSober: _controller.getDaysSober(),
+                      ),
+                    );
+                  }
+                },
+              ),
+
+              // Add a small padding for the other cards
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    const QuickActions(),
+                    const SizedBox(height: 20),
+                    const ProgressCard(),
+                    const SizedBox(height: 20),
+                    GamblingRecoveryMotivationCard(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.settings, color: Colors.blue[900]),
-          onPressed: () {
-            // TODO: Implement settings
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.blue[900]),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.emergency, color: Colors.red[700]),
-            onPressed: () {
-              // TODO: Implement SOS
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CheckInCard(
-              controller: _controller,
-              onCheckIn: () {
-                _animationController.forward(from: 0);
-                if (_controller.shouldCelebrate()) {
-                  _confettiController.play();
-                  showDialog(
-                    context: context,
-                    builder: (context) => CelebrationDialog(
-                      confettiController: _confettiController,
-                      daysSober: _controller.getDaysSober(),
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.topRight,
-              child: const QuickActions(),
-            ),
-            const SizedBox(height: 20),
-            const ProgressCard(),
-            const SizedBox(height: 20),
-            const MotivationCard(),
-          ],
         ),
       ),
     );

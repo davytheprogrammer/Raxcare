@@ -24,13 +24,18 @@ dependencies:
   font_awesome_flutter: ^10.8.0 # Extended icon set
   flutter_local_notifications: ^18.0.0 
   timezone: ^0.10.0
+  country_code_picker: ^3.2.0
+  
   
   # Web and External Services
   webview_flutter: ^4.7.0      # Embedded web content
   url_launcher: ^6.2.6         # Launch URLs, phone calls, emails
+  animate_do: ^4.2.0
+  uuid: ^4.5.1
 
   # Local Storage
   shared_preferences: ^2.0.8   # Persistent key-value storage
+  connectivity_plus: ^6.1.3
 
   # UI Enhancement Packages
   confetti: ^0.8.0             # Celebration effects

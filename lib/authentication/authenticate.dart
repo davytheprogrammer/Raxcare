@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 
 import 'onboarding_screen.dart';
-import 'personalization_screen.dart';
 import '../screens/home/home.dart';
 
 class Authenticate extends StatefulWidget {
@@ -19,13 +18,11 @@ class _AuthenticateState extends State<Authenticate> {
   bool showSignIn = true;
   bool onboardingComplete = false;
   bool isLoading = true;
-  bool isNewUser = false;
 
   @override
   void initState() {
     super.initState();
     _checkOnboarding();
-    _checkIfNewUser();
   }
 
   Future<void> _checkOnboarding() async {
@@ -34,14 +31,6 @@ class _AuthenticateState extends State<Authenticate> {
     setState(() {
       onboardingComplete = completed;
       isLoading = false;
-    });
-  }
-
-  Future<void> _checkIfNewUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isNew = prefs.getBool('isNewUser') ?? true;
-    setState(() {
-      isNewUser = isNew;
     });
   }
 
@@ -56,14 +45,6 @@ class _AuthenticateState extends State<Authenticate> {
   void toggleView() {
     setState(() {
       showSignIn = !showSignIn;
-    });
-  }
-
-  Future<void> _handleNewUserRegistration() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isNewUser', false);
-    setState(() {
-      isNewUser = false;
     });
   }
 
@@ -90,25 +71,7 @@ class _AuthenticateState extends State<Authenticate> {
             : Register(
                 toggleView: toggleView,
                 key: const ValueKey('register'),
-                onRegistrationComplete: () {
-                  _handleNewUserRegistration();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PersonalizationScreen(
-                        onComplete: _handleNewUserRegistration,
-                      ),
-                    ),
-                  );
-                },
               ),
-      );
-    }
-
-    // For new users after registration
-    if (isNewUser) {
-      return PersonalizationScreen(
-        onComplete: _handleNewUserRegistration,
       );
     }
 

@@ -15,17 +15,20 @@ class _TriggersScreenState extends State<TriggersScreen> {
   final Set<String> _selectedTriggers = {};
   bool _isSubmitting = false;
 
+  // Gambling-specific triggers
   final List<String> _commonTriggers = [
-    'Stress',
-    'Anxiety',
-    'Social Pressure',
-    'Loneliness',
+    'Financial Stress',
+    'Casino Advertisements',
+    'Sports Events',
+    'Gambling Apps',
     'Boredom',
-    'Certain Places',
-    'Specific People',
-    'Negative Emotions',
-    'Celebrations',
-    'Financial Problems'
+    'Peer Pressure',
+    'Alcohol Consumption',
+    'Past Wins',
+    'Bonus Offers',
+    'Access to Credit/Money',
+    'Seeing Betting Shops',
+    'Weekend Free Time'
   ];
 
   void _toggleTrigger(String trigger) {
@@ -48,7 +51,7 @@ class _TriggersScreenState extends State<TriggersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Identify Your Triggers"),
+        title: const Text("Identify Your Gambling Triggers"),
         centerTitle: true,
         elevation: 0,
       ),
@@ -59,7 +62,7 @@ class _TriggersScreenState extends State<TriggersScreen> {
           children: [
             const SizedBox(height: 32),
             Text(
-              "Know Your Triggers",
+              "Know Your Gambling Triggers",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -67,7 +70,7 @@ class _TriggersScreenState extends State<TriggersScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "What situations or feelings make you vulnerable?",
+              "What situations or feelings make you want to gamble?",
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey.shade600,
                   ),
@@ -109,8 +112,8 @@ class _TriggersScreenState extends State<TriggersScreen> {
             TextField(
               controller: _triggersController,
               decoration: InputDecoration(
-                labelText: "Add your own triggers",
-                hintText: "e.g., Work deadlines, Family conflicts",
+                labelText: "Add your own gambling triggers",
+                hintText: "e.g., Payday, Sports season, Online promotions",
                 prefixIcon: const Icon(Icons.add_circle_outline),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

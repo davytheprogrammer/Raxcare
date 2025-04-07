@@ -1,3 +1,4 @@
+import 'package:RaxCare/screens/goals/goals.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,8 +10,6 @@ import 'app.dart';
 import 'wrapper.dart';
 import 'package:RaxCare/screens/tracking.dart';
 import 'package:RaxCare/screens/community.dart';
-import 'package:RaxCare/screens/goals/goals.dart'; // Import your goals screen
-import 'package:google_generative_ai/google_generative_ai.dart'; // For GenerativeModel
 
 class Routes {
   static const String app = '/app';
@@ -64,13 +63,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the AI model (replace with your actual API key)
-    final generativeModel = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey:
-          'AIzaSyCOutG-g_tVZKzbTtH0bzNjWdoaDVA2YCo', // Replace with your actual API key
-    );
-
     return MultiProvider(
       providers: [
         StreamProvider<TheUser?>.value(
@@ -79,7 +71,7 @@ class MyApp extends StatelessWidget {
           catchError: (_, __) => null,
         ),
         ChangeNotifierProvider(
-          create: (_) => GoalProvider(aiModel: generativeModel),
+          create: (_) => RecoveryGoalProvider(),
         ),
       ],
       child: MaterialApp(

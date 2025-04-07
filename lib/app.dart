@@ -28,8 +28,8 @@ class _AppState extends State<App> {
   final List<Widget> _screens = [
     const HomePage(),
     RelapseHistoryScreen(),
-    const GoalsScreen(),
-    JournalScreen(),
+    const RecoveryGoalsScreen(),
+    const CBTGuidedJournalScreen(),
     const ProfileScreen(),
   ];
 

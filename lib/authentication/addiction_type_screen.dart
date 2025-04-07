@@ -14,17 +14,25 @@ class _AddictionTypeScreenState extends State<AddictionTypeScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
 
-  // Common addiction types for suggestions
+  // Gambling addiction types for suggestions
   final List<String> _commonAddictions = [
-    'Alcohol',
-    'Drugs',
-    'Gambling',
-    'Pornography',
-    'Nicotine',
-    'Internet',
-    'Gaming',
-    'Shopping'
+    'Sports Betting',
+    'Aviater',
+    'Casino Games',
+    'Poker',
+    'Lottery',
+    'Slot Machines',
+    'Online Gambling',
+    'Stock Trading and Cryptocurrency',
+    'Fantasy Sports',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill with 'Gambling' as the main addiction type
+    _addictionController.text = 'Gambling';
+  }
 
   @override
   void dispose() {
@@ -52,7 +60,7 @@ class _AddictionTypeScreenState extends State<AddictionTypeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Recovery Journey"),
+        title: const Text("Gambling Recovery Journey"),
         elevation: 0,
         centerTitle: true,
       ),
@@ -65,14 +73,14 @@ class _AddictionTypeScreenState extends State<AddictionTypeScreen> {
             children: [
               const SizedBox(height: 32),
               Text(
-                "What are you recovering from?",
+                "What type of gambling are you recovering from?",
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 8),
               Text(
-                "This helps us personalize your experience",
+                "This helps us personalize your gambling recovery journey",
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey.shade600,
                     ),
@@ -83,23 +91,23 @@ class _AddictionTypeScreenState extends State<AddictionTypeScreen> {
               TextFormField(
                 controller: _addictionController,
                 decoration: InputDecoration(
-                  labelText: "Addiction type",
-                  hintText: "e.g., Alcohol, Gambling, etc.",
-                  prefixIcon: const Icon(Icons.health_and_safety_outlined),
+                  labelText: "Type of gambling",
+                  hintText: "e.g., Sports Betting, Poker, etc.",
+                  prefixIcon: const Icon(Icons.casino_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your addiction type';
+                    return 'Please enter your gambling type';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // Common addictions chips
+              // Gambling type chips
               Wrap(
                 spacing: 8,
                 children: _commonAddictions.map((addiction) {

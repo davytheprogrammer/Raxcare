@@ -86,7 +86,8 @@ class QuickActions extends StatelessWidget {
             color: Colors.purple[700]!,
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => JournalScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const CBTGuidedJournalScreen()),
               );
             },
           ),
